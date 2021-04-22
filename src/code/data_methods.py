@@ -14,7 +14,7 @@ def configure_csv_data(filepath):
 
     Inputs
     ------
-    filepath - leads to csv file containg data.
+    filepath - leads to csv file containg data. The file consists of three columns ('A', 'B', and 'C'), each row represents a location with column A indiciating whether it is an origin (0) or destination (1), column B the latitude and column C the longitude.
 
     Outputs
     -------
@@ -34,8 +34,17 @@ def configure_csv_data(filepath):
         }
     """
     data = np.genfromtxt(filepath, delimiter=",")
-    print(data)
-    return data
+    location_data = {"origins": [], "destinations": []}
+    for row in data:
+        if row[0] == 0:
+            location_data["origins"].append(
+                {"point": {"latitude": row[1], "longitude": row[2]}}
+            )
+        else:
+            location_data["destinations"].append(
+                {"point": {"latitude": row[1], "longitude": row[2]}}
+            )
+    return location_data
 
 
 def get_travel_times(apiKey, departure_time, trial_data):

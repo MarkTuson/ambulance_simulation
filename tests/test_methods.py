@@ -488,7 +488,7 @@ expected_matrix = np.array(
 
 
 def test_configure_csv_data():
-    assert trial_data.items() == data_methods.configure_csv_data(filepath).items()
+    assert trial_data == data_methods.configure_csv_data(filepath)
 
 
 """
