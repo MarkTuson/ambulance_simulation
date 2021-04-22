@@ -3,15 +3,13 @@ import numpy as np
 import src.code.data_methods as data_methods
 import src.code.methods as methods
 
-
+"""
 fname = "/Users/Mark Tuson/Dropbox/Mark/TomTom_API_key.txt"
 file = open(fname, "r")
 apiKey = file.read()
-filepath = "tests/sample.csv"
-
-
 departure_time = "2022-01-12T11:12:00Z"
-
+"""
+filepath = "tests/sample.csv"
 
 trial_data = {
     "origins": [
