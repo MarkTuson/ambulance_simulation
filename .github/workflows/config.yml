@@ -31,8 +31,4 @@ jobs:
       run: |
         cd src/
         python -m black . --check
-    - name: Run the small experiment as a functional test
-      run: |
-        pwd
-        cd experiments/small_experiment
-        python main.py
+
