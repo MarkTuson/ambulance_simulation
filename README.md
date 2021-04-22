@@ -1,1 +1,1 @@
-This package contains the code to run an ambulance simulation.
+This package contains the code to run an ambulance simulation. It's split into three files; data-methods creates the intial data set on which the simulation runs, methods contains the simulation methods annd main combines and runs these in the simulation itself.
