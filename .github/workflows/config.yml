@@ -31,7 +31,3 @@ jobs:
       run: |
         cd src/
         python -m black . --check
-<<<<<<< HEAD
-
-=======
->>>>>>> 79bfda3735918ae49ace7732f7405b6c186b7840
