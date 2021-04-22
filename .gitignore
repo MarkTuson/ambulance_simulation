@@ -1,0 +1,6 @@
+__pycache__/
+src/ambulance_simulation.egg-info
+build/
+dist/
+sample.csv
+.vscode/
