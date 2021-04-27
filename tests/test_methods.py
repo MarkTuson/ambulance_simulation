@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import pandas as pd
 import src.code.data_methods as data_methods
 import src.code.methods as methods
 
@@ -509,3 +510,25 @@ def test_construct_preference_matrix():
         test_preference_matrix,
         data_methods.construct_preference_matrix(test_travel_matrix, num_origins),
     )
+
+
+def test_initialise_update_record():
+    column_headers = ["a", "b", "c", "d"]
+    initial_record = data_methods.initialise_record(column_headers)
+    time = 1.56
+    event = "patient_call"
+    ambulance_availability = [[2, 3], [4, 5]]
+    travel_times = [1.7, 4.6, 6.7, 8.1]
+    test_frame = pd.DataFrame(
+        [[1.56, "patient_call", [[2, 3], [4, 5]], [1.7, 4.6, 6.7, 8.1]]],
+        columns=(["a", "b", "c", "d"]),
+    )
+    record = data_methods.update_record(
+        initial_record,
+        column_headers,
+        time,
+        event,
+        ambulance_availability,
+        travel_times,
+    )
+    assert record.equals(test_frame)

@@ -1,6 +1,59 @@
 import requests
 import json
 import numpy as np
+import pandas as pd
+
+
+"""
+SECTION: Records
+"""
+
+
+def initialise_record(column_headers):
+    """
+    Initialises the record keeping data structure
+    STILL UNDER DEVLOPMENT
+
+    Inputs
+    ------
+    column_headers - a list of strings describing each column of data
+    currently these are:
+        'time' - time stamp (float) for event
+        'event' - a string describing the event
+        'ambulance_availability' - a list of integer lists in which each        integer list describes the ambulance availability for a specific ambulance station; index[0] describes the allocation of vehicles of type 0, index[1] the number of type 0 vehicles available for service, index[2] describes the allocation of vehicles of type 1, index[3] the number of type 1 vehicles available for service, and so on..
+        travel_times - a list of travel times associated with the event (if relevant), index[0] the time to travel from the station to the patient location, index[1] time on site, index[2] site to hospital, index[3] handover time, index[4] time to return from hospital to station and restock.
+
+
+
+    outputs
+    -------
+    An empty panda dataframe with the columns in place
+
+    """
+    return pd.DataFrame(columns=(column_headers))
+
+
+def update_record(
+    record, column_headers, time, event, ambulance_availability, travel_times
+):
+    """
+    Updates the record when called
+
+    Inputs
+    ------
+    record - a panda dataframe created using the initialise_record function.
+    The  should mirror the column_headers list, in both name and data type.
+
+    Outputs
+    -------
+    Record dataframe with an additional row of data
+
+    """
+    event_record = pd.DataFrame(
+        [[time, event, ambulance_availability, travel_times]], columns=column_headers
+    )
+    print(record.append(event_record, ignore_index=True))
+    return record.append(event_record, ignore_index=True)
 
 
 """
