@@ -3,12 +3,20 @@ import pandas as pd
 import math
 from collections import namedtuple
 
+def convert_from_class(clss, params):
+    k = clss % params["n_specialities"]
+    p = (clss - k) / params["n_specialities"]
+    return int(p), int(k)
+
+def convert_to_class(p, k, params):
+    clss = (p * params["n_specialities"]) + k
+    return int(clss)
+
 
 def get_delay_period(time, params):
     for i in range(params["n_factors"]):
         if time >= params["delay_split"][i] and time < params["delay_split"][i + 1]:
             return i
-
 
 def find_max_dist(start_time, params):
     frac_part, int_part = math.modf(start_time)
@@ -44,47 +52,72 @@ def expected_pickup(initial_call_time, a, p, params):
     The expected service time for ambulance a to service patient p in time period t.
     Consists of:
       - getting to the patient
-      - taking patient to the hospital
-      - getting back to ambulance location from the hospital
     """
-    pick_up_transit_time = journey_time(
-        initial_call_time, params["amb_to_patient"][a][p], params
-    )
+    pick_up_transit_time = journey_time(initial_call_time, params["amb_to_patient"][a][p], params)
     return pick_up_transit_time + initial_call_time
 
 
-def expected_service(initial_call_time, a, p, params):
+def get_service(initial_call_time, ind, params):
     """
     The expected service time for ambulance a to service patient p in time period t.
     Consists of:
       - getting to the patient
+      - delay at site
       - taking patient to the hospital
+      - delay at hospital
       - getting back to ambulance location from the hospital
     """
-    pick_up_transit_time = journey_time(
-        initial_call_time, params["amb_to_patient"][a][p], params
+    a, p, k = ind.ambulance, ind.pick_up_location, ind.speciality
+    expected_pick_up_transit_time = journey_time(initial_call_time, params["amb_to_patient"][a][p], params)
+    pick_up_transit_time = ciw.random.expovariate(1 / expected_pick_up_transit_time)
+    ind.pick_up_time = pick_up_transit_time
+    initial_call_time += pick_up_transit_time
+
+    expected_delay_at_site = params["delay_at_site"][k]
+    delay_at_site = ciw.random.expovariate(1 / expected_delay_at_site)
+    initial_call_time += delay_at_site
+    ind.delay_at_site = delay_at_site
+
+    hospital = ciw.random_choice(
+        list(range(params['n_hospitals'])) + [-1],
+        params["prob_hosp"][p][k] + [1 - sum(params["prob_hosp"][p][k])]
     )
-    to_hosp_transit_time = journey_time(
-        initial_call_time + pick_up_transit_time, params["patient_to_hosp"][p], params
-    )
-    return_to_loc_transit_time = journey_time(
-        initial_call_time + pick_up_transit_time + to_hosp_transit_time,
-        params["hosp_to_amb"][p][a],
-        params,
-    )
-    return pick_up_transit_time, to_hosp_transit_time, return_to_loc_transit_time
+
+    if hospital == -1:
+        ind.hospital = None
+        ind.to_hospital_time = None
+        ind.delay_at_hospital = None
+
+        expected_return_to_loc_time = journey_time(initial_call_time, params["patient_to_amb"][p][a], params)
+        return_to_loc_time = ciw.random.expovariate(1 / expected_return_to_loc_time)
+        ind.return_to_loc_time = return_to_loc_time
+
+        ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.return_to_loc_time
+
+    else:
+        ind.hospital = hospital
+        expected_to_hosp_transit_time = journey_time(initial_call_time, params["patient_to_hosp"][p][hospital], params)
+        to_hosp_transit_time = ciw.random.expovariate( 1 / expected_to_hosp_transit_time)
+        initial_call_time += to_hosp_transit_time
+        ind.to_hospital_time = to_hosp_transit_time
+
+        expected_delay_at_hospital = params["delay_at_hosp"][hospital][k]
+        delay_at_hospital = ciw.random.expovariate(1 / expected_delay_at_hospital)
+        initial_call_time += delay_at_hospital
+        ind.delay_at_hospital = delay_at_hospital
+
+        expected_return_to_loc_time = journey_time(initial_call_time, params["hosp_to_amb"][hospital][a], params)
+        return_to_loc_time = ciw.random.expovariate(1 / expected_return_to_loc_time)
+        ind.return_to_loc_time = return_to_loc_time
+
+        ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.to_hospital_time + ind.delay_at_hospital + ind.return_to_loc_time
 
 
-def make_service_dist(ambulance, params):
+def make_service_dist(params):
     class AmbulanceTrip(ciw.dists.Distribution):
         def sample(self, t, ind):
-            pick_up, to_hosp, return_to_loc = expected_service(
-                t, ambulance, ind.customer_class, params
-            )
-            ind.pick_up_time = ciw.random.expovariate(1 / pick_up)
-            ind.to_hospital_time = ciw.random.expovariate(1 / to_hosp)
-            ind.return_to_loc_time = ciw.random.expovariate(1 / return_to_loc)
-            return ind.pick_up_time + ind.to_hospital_time + ind.return_to_loc_time
+            get_service(t, ind, params)
+            return ind.complete_time
 
     return AmbulanceTrip()
 
@@ -94,13 +127,18 @@ DataRecord = namedtuple(
     [
         "id_number",
         "customer_class",
-        "node",
+        "pick_up_location",
+        "speciality",
+        "hospital",
+        "ambulance_location",
         "arrival_date",
         "waiting_time",
         "service_start_date",
         "service_time",
         "pick_up_time",
+        "delay_at_site",
         "to_hospital_time",
+        "delay_at_hospital",
         "return_to_loc_time",
         "service_end_date",
         "time_blocked",
@@ -116,8 +154,15 @@ class Patient(ciw.Individual):
     def __init__(self, id_number, customer_class=0, priority_class=0, simulation=False):
         super().__init__(id_number, customer_class, priority_class, simulation)
         self.pick_up_time = False
+        self.delay_at_site = False
         self.to_hospital_time = False
+        self.delay_at_hospital = False
         self.return_to_loc_time = False
+        p, k = convert_from_class(customer_class, simulation.params)
+        self.speciality = k
+        self.pick_up_location = p
+        self.hospital = False
+        self.ambulance = False
 
 
 class AmbulanceNode(ciw.Node):
@@ -138,7 +183,7 @@ class AmbulanceNode(ciw.Node):
                 a: expected_pickup(
                     self.simulation.current_time,
                     a,
-                    ind.customer_class,
+                    ind.pick_up_location,
                     self.simulation.params,
                 )
                 for a in range(self.simulation.network.number_of_nodes - 1)
@@ -147,38 +192,50 @@ class AmbulanceNode(ciw.Node):
             for choice in ordered_choices:
                 node = self.simulation.nodes[choice + 2]
                 if any(not s.busy for s in node.servers):
+                    ind.ambulance = node.id_number - 2
                     return node
             return self.simulation.nodes[-1]
 
     def write_individual_record(self, individual):
         """
         Write a data record for an individual:
-            - Arrival date
-            - Wait
-            - Service start date
-            - Service time
-            - Pick up time
-            - To hospital time
-            - Reutrn to location time
-            - Service end date
-            - Blocked
-            - Exit date
-            - Node
-            - Destination
-            - Previous class
-            - Queue size at arrival
-            - Queue size at departure
+          - id_number
+          - customer_class
+          - pick_up_location
+          - speciality
+          - hospital
+          - ambulance_location
+          - arrival_date
+          - waiting_time
+          - service_start_date
+          - service_time
+          - pick_up_time
+          - delay_at_site
+          - to_hospital_time
+          - delay_at_hospital
+          - return_to_loc_time
+          - service_end_date
+          - time_blocked
+          - exit_date
+          - destination
+          - queue_size_at_arrival
+          - queue_size_at_departure
         """
         record = DataRecord(
             individual.id_number,
             individual.previous_class,
-            self.id_number,
+            individual.pick_up_location,
+            individual.speciality,
+            individual.hospital,
+            individual.ambulance,
             individual.arrival_date,
             individual.service_start_date - individual.arrival_date,
             individual.service_start_date,
             individual.service_end_date - individual.service_start_date,
             individual.pick_up_time,
+            individual.delay_at_site,
             individual.to_hospital_time,
+            individual.delay_at_hospital,
             individual.return_to_loc_time,
             individual.service_end_date,
             individual.exit_date - individual.service_end_date,
@@ -225,18 +282,20 @@ class AmbulanceSimulation(ciw.Simulation):
 
 
 def create_ambulance_network(params):
+    arrival_rates = [r for row in params['loc_arrival_rates'] for r in row]
+    print(arrival_rates)
     N = ciw.create_network(
         arrival_distributions={
             "Class "
             + str(c): [ciw.dists.Exponential(r)]
-            + [ciw.dists.NoArrivals() for _ in range(params["n_ambulances"])]
-            for c, r in enumerate(params["loc_arrival_rates"])
+            + [ciw.dists.NoArrivals() for a in range(params["n_ambulances"])]
+            for c, r in enumerate(arrival_rates)
         },
         service_distributions={
             "Class "
             + str(c): [ciw.dists.Deterministic(0)]
-            + [make_service_dist(a, params) for a in range(params["n_ambulances"])]
-            for c in range(params["n_locations"])
+            + [make_service_dist(params) for a in range(params["n_ambulances"])]
+            for c in range(params["n_locations"] * params['n_specialities'])
         },
         number_of_servers=[float("Inf")] + [1 for _ in range(params["n_ambulances"])],
         queue_capacities=[float("Inf")] + [0 for _ in range(params["n_ambulances"])],
@@ -246,7 +305,7 @@ def create_ambulance_network(params):
                 [0 for _ in range(params["n_ambulances"] + 1)]
                 for _ in range(params["n_ambulances"] + 1)
             ]
-            for c in range(params["n_locations"])
+            for c in range(params["n_locations"] * params['n_specialities'])
         },
     )
     return N

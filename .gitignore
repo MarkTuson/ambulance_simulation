@@ -3,3 +3,4 @@ src/ambulance_simulation.egg-info
 build/
 dist/
 .vscode/
+*.DS_Store*
