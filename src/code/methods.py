@@ -22,14 +22,14 @@ def find_max_dist(start_time, params):
     frac_part, int_part = math.modf(start_time)
     i = get_delay_period(frac_part, params)
     max_duration = params["delay_split"][i + 1] - frac_part
-    max_distance = (max_duration * params["delay_factor"][i]) * params["speed"]
+    max_distance = (max_duration * params["delay_factor"][i])
     return max_distance, max_duration
 
 
 def final_leg(start_time, distance_left, params):
     frac_part, int_part = math.modf(start_time)
     i = get_delay_period(frac_part, params)
-    tx = (distance_left / (params["delay_factor"][i] * params["speed"])) + frac_part
+    tx = (distance_left / (params["delay_factor"][i])) + frac_part
     return tx - frac_part
 
 

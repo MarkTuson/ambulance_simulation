@@ -28,7 +28,6 @@ To run `5` trials or parameter set `toy_params.yml` and then write the results t
 + J_{yk} == delay_at_hosp
 ## Rates
 + \lambda_{pk} == loc_arrival_rates
-+ s == speed
 ## Probabilities
 + q_{pky} == prob_hosp
 ## Allocation
