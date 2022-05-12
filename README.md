@@ -31,3 +31,5 @@ To run `5` trials or parameter set `toy_params.yml` and then write the results t
 + s == speed
 ## Probabilities
 + q_{pky} == prob_hosp
+## Allocation
++ Z_a == ambulance_allocation

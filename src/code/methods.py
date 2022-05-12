@@ -283,7 +283,6 @@ class AmbulanceSimulation(ciw.Simulation):
 
 def create_ambulance_network(params):
     arrival_rates = [r for row in params['loc_arrival_rates'] for r in row]
-    print(arrival_rates)
     N = ciw.create_network(
         arrival_distributions={
             "Class "
@@ -297,7 +296,7 @@ def create_ambulance_network(params):
             + [make_service_dist(params) for a in range(params["n_ambulances"])]
             for c in range(params["n_locations"] * params['n_specialities'])
         },
-        number_of_servers=[float("Inf")] + [1 for _ in range(params["n_ambulances"])],
+        number_of_servers=[float("Inf")] + params["ambulance_allocation"],
         queue_capacities=[float("Inf")] + [0 for _ in range(params["n_ambulances"])],
         routing={
             "Class "

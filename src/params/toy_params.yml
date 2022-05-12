@@ -105,3 +105,7 @@ prob_hosp:
       - 0.6
     - - 0.2
       - 0.5
+ambulance_allocation:
+  - 3
+  - 2
+  - 3
