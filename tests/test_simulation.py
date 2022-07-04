@@ -1,4 +1,5 @@
 import src.code.methods as methods
+import ciw
 
 def test_convert_from_class():
     params = {
@@ -182,3 +183,49 @@ def test_journey_time():
 	assert methods.journey_time(3/16, 10/16, params) == 9/16
 	assert methods.journey_time(3/16, 11/16, params) == 10/16
 
+
+def test_expected_pickup():
+	params = {
+	    'n_factors': 3,
+	    'delay_split': [0, 0.3, 0.6, 1],
+	    'delay_factor': [1, 0.5, 2],
+	    'amb_to_patient': [[0, 0.2], [0.1, 0.1]]
+	}
+	# Callout in first period (no delay)
+	assert methods.expected_pickup(initial_call_time=0, a=0, p=0, params=params) == 0 + 0
+	assert methods.expected_pickup(initial_call_time=0, a=1, p=0, params=params) == 0 + 0.1
+	assert methods.expected_pickup(initial_call_time=0, a=0, p=1, params=params) == 0 + 0.2
+	assert methods.expected_pickup(initial_call_time=0, a=1, p=1, params=params) == 0 + 0.1
+	# Callout in second period (half as slow)
+	assert methods.expected_pickup(initial_call_time=0.35, a=0, p=0, params=params) == 0.35 + 0
+	assert methods.expected_pickup(initial_call_time=0.35, a=1, p=0, params=params) == 0.35 + 0.2
+	assert methods.expected_pickup(initial_call_time=0.35, a=0, p=1, params=params) == 0.35 + 0.25 + 0.0375 # start time + time in slow period + rest of time in fast period
+	assert methods.expected_pickup(initial_call_time=0.35, a=1, p=1, params=params) == 0.35 + 0.2
+	# Callout in third period (twice as fact)
+	assert methods.expected_pickup(initial_call_time=0.65, a=0, p=0, params=params) == 0.65 + 0
+	assert methods.expected_pickup(initial_call_time=0.65, a=1, p=0, params=params) == 0.65 + 0.05
+	assert methods.expected_pickup(initial_call_time=0.65, a=0, p=1, params=params) == 0.65 + 0.1
+	assert methods.expected_pickup(initial_call_time=0.65, a=1, p=1, params=params) == 0.65 + 0.05
+
+
+def test_make_service_dist():
+	params = {
+	    'n_factors': 3,
+	    'delay_split': [0, 0.3, 0.6, 1],
+	    'delay_factor': [1, 0.5, 2],
+	    'amb_to_patient': [[0, 0.2], [0.1, 0.1]]
+	}
+	Dist = methods.make_service_dist(params)
+	assert str(Dist) == 'Distribution' # check it inherits from ciw.dists.Distribuions
+
+
+def test_get_arrival_dist():
+	assert str(methods.get_arrival_dist(0)) == 'NoArrivals'
+	assert str(methods.get_arrival_dist(1)) == 'Exponential: 1'
+	assert str(methods.get_arrival_dist(2)) == 'Exponential: 2'
+	assert str(methods.get_arrival_dist(3)) == 'Exponential: 3'
+
+	assert methods.get_arrival_dist(0).sample() == float('inf')
+	assert methods.get_arrival_dist(1).sample() > 0
+	assert methods.get_arrival_dist(2).sample() > 0
+	assert methods.get_arrival_dist(3).sample() > 0

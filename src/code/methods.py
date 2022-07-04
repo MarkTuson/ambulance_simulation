@@ -286,6 +286,7 @@ def get_arrival_dist(r):
         return ciw.dists.Exponential(r)
     return ciw.dists.NoArrivals()
 
+
 def create_ambulance_network(params):
     arrival_rates = [r for row in params['loc_arrival_rates'] for r in row]
     N = ciw.create_network(
