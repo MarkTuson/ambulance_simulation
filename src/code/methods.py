@@ -74,7 +74,7 @@ def get_service(initial_call_time, ind, params):
     initial_call_time += pick_up_transit_time
 
     expected_delay_at_site = params["delay_at_site"][k]
-    delay_at_site = ciw.random.expovariate(1 / expected_delay_at_site)
+    delay_at_site = expected_delay_at_site
     initial_call_time += delay_at_site
     ind.delay_at_site = delay_at_site
 
@@ -102,7 +102,7 @@ def get_service(initial_call_time, ind, params):
         ind.to_hospital_time = to_hosp_transit_time
 
         expected_delay_at_hospital = params["delay_at_hosp"][hospital][k]
-        delay_at_hospital = ciw.random.expovariate(1 / expected_delay_at_hospital)
+        delay_at_hospital = expected_delay_at_hospital
         initial_call_time += delay_at_hospital
         ind.delay_at_hospital = delay_at_hospital
 
@@ -281,12 +281,17 @@ class AmbulanceSimulation(ciw.Simulation):
         )
 
 
+def get_arrival_dist(r):
+    if r > 0.0:
+        return ciw.dists.Exponential(r)
+    return ciw.dists.NoArrivals()
+
 def create_ambulance_network(params):
     arrival_rates = [r for row in params['loc_arrival_rates'] for r in row]
     N = ciw.create_network(
         arrival_distributions={
             "Class "
-            + str(c): [ciw.dists.Exponential(r)]
+            + str(c): [get_arrival_dist(r)]
             + [ciw.dists.NoArrivals() for a in range(params["n_ambulances"])]
             for c, r in enumerate(arrival_rates)
         },

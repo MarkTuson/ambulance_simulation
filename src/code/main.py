@@ -28,7 +28,7 @@ if __name__ == "__main__":
         Q = AmbulanceSimulation(
             N, node_class=AmbulanceNode, individual_class=Patient, params=params
         )
-        Q.simulate_until_max_time(100)
+        Q.simulate_until_max_time(100, progress_bar=True)
         recs = pd.DataFrame(Q.get_all_records())
         recs["Trial"] = trial
         all_recs.append(recs)
