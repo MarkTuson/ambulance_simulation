@@ -3,6 +3,10 @@ This package contains the code to run an ambulance simulation. It's split into t
 
 # Usage
 
+To create a parameter file called `src/params/base.yml` from data in the folder `src/data/base`, run:
+
+>>> python src/code/create_params.py src/data/base/ src/params/base.yml
+
 To run `5` trials or parameter set `toy_params.yml` and then write the results to `toy_results.csv`, run:
 
 >>> python src/code/main.py src/params/toy_params.yml src/results/toy_results.csv 5
