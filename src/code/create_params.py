@@ -24,13 +24,14 @@ if __name__ == "__main__":
 
     ## Travel Times
     travel_times = np.genfromtxt('src/data/global/traveltime_matrix.csv', delimiter=',')
-    # Set travel time within same neighbourhood to minimum of travel time from that neoghbourhood to any other neighbourhood
+    # Set travel time within same neighbourhood to minimum of travel time from that neighbourhood to any other neighbourhood
     temp_max = int(travel_times.max() * 2)
     num_neighbourhoods = len(travel_times)
     travel_times = travel_times + (np.eye(num_neighbourhoods) * temp_max)
     to_same_neighbouthood = travel_times.min(axis=1)
     travel_times = travel_times - (np.eye(num_neighbourhoods) * temp_max)
     travel_times = travel_times + (np.eye(num_neighbourhoods) * to_same_neighbouthood)
+    travel_times = travel_times / 1440
 
     # mapping from ambulance index to neighbourhood index
     ambulance_neighbourhood = pd.read_csv(data_folder + 'ambulance_neigbourhood.csv', index_col='Post Serial')
@@ -51,7 +52,9 @@ if __name__ == "__main__":
 
     # Get delay splits and factors
     delay_split = np.genfromtxt('src/data/global/delay_split.csv', delimiter=',')
+    delay_split_secondary = np.genfromtxt('src/data/global/delay_split_secondary.csv', delimiter=',')
     delay_factor = np.genfromtxt('src/data/global/delay_factor.csv', delimiter=',')
+    delay_factor_secondary = np.genfromtxt('src/data/global/delay_factor_secondary.csv', delimiter=',')
 
     # Get delays at hospital and at site
     delay_at_hosp = np.genfromtxt(data_folder + 'delay_at_hosp.csv', delimiter=',')
@@ -62,6 +65,7 @@ if __name__ == "__main__":
     params = {
         'n_ambulances': len(ambulance_neighbourhood),
         'n_factors': len(delay_factor),
+        'n_factors_secondary': len(delay_factor_secondary),
         'n_locations': num_neighbourhoods,
         'n_specialities': 3,
         'n_hospitals': num_neighbourhoods,
@@ -70,7 +74,9 @@ if __name__ == "__main__":
         'hosp_to_amb': travel_times.T[ambulance_neighbourhood['Neighbourhood serial'].values].T.tolist(),
         'patient_to_amb': travel_times.T[ambulance_neighbourhood['Neighbourhood serial'].values].T.tolist(),
         'delay_factor': delay_factor.tolist(),
+        'delay_factor_secondary': delay_factor_secondary.tolist(),
         'delay_split': delay_split.tolist(),
+        'delay_split_secondary': delay_split_secondary.tolist(),
         'delay_at_site': delay_at_site.tolist(),
         'delay_at_hosp': delay_at_hosp.tolist(),
         'loc_arrival_rates': [demand.T[i].values.tolist() for i in range(len(demand))],
@@ -79,7 +85,7 @@ if __name__ == "__main__":
             for j in range(len(destination_probabilities_A1))]
             for i in range(len(destination_probabilities_A1))
         ]).tolist(),
-        'ambulance_allocation': allocation.tolist(),
+        'ambulance_allocation': [int(c) for c in allocation.tolist()],
     }
 
     # Write parameters to file

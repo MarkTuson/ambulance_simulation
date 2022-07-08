@@ -24,13 +24,15 @@ if __name__ == "__main__":
     all_recs = []
     for trial in range(n_trials):
         ciw.seed(trial)
-        N = create_ambulance_network(params)
-        Q = AmbulanceSimulation(
-            N, node_class=AmbulanceNode, individual_class=Patient, params=params
+        N = create_transit_network(params)
+        Q = TransitSimulation(
+            N, node_class=TransitNode, individual_class=TransitJob, params=params
         )
-        Q.simulate_until_max_time(100, progress_bar=True)
+        Q.simulate_until_max_time(31, progress_bar=True)
         recs = pd.DataFrame(Q.get_all_records())
         recs["Trial"] = trial
         all_recs.append(recs)
 
-    pd.concat(all_recs).to_csv(results_name)
+    data = pd.concat(all_recs)
+    data = data[data['destination'] == -1]
+    data.to_csv(results_name)

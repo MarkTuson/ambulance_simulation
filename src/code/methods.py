@@ -13,47 +13,56 @@ def convert_to_class(p, k, params):
     return int(clss)
 
 
-def get_delay_period(time, params):
-    for i in range(params["n_factors"]):
-        if time >= params["delay_split"][i] and time < params["delay_split"][i + 1]:
+def get_delay_period(time, params, secondary=False):
+    sffx = ""
+    if secondary:
+        sffx = "_secondary"
+    for i in range(params["n_factors" + sffx]):
+        if time >= params["delay_split" + sffx][i] and time < params["delay_split" + sffx][i + 1]:
             return i
 
-def find_max_dist(start_time, params):
+def find_max_dist(start_time, params, secondary=False):
+    sffx = ""
+    if secondary:
+        sffx = "_secondary"
     frac_part, int_part = math.modf(start_time)
-    i = get_delay_period(frac_part, params)
-    max_duration = params["delay_split"][i + 1] - frac_part
-    max_distance = (max_duration * params["delay_factor"][i])
+    i = get_delay_period(frac_part, params, secondary)
+    max_duration = params["delay_split" + sffx][i + 1] - frac_part
+    max_distance = (max_duration * params["delay_factor" + sffx][i])
     return max_distance, max_duration
 
 
-def final_leg(start_time, distance_left, params):
+def final_leg(start_time, distance_left, params, secondary=False):
+    sffx = ""
+    if secondary:
+        sffx = "_secondary"
     frac_part, int_part = math.modf(start_time)
-    i = get_delay_period(frac_part, params)
-    tx = (distance_left / (params["delay_factor"][i])) + frac_part
+    i = get_delay_period(frac_part, params, secondary)
+    tx = (distance_left / (params["delay_factor" + sffx][i])) + frac_part
     return tx - frac_part
 
 
-def journey_time(start_time, required_distance, params):
+def journey_time(start_time, required_distance, params, secondary=False):
     dist_covered = 0
     time_taken = 0
     max_dist, duration = 0, 0
     while dist_covered + max_dist < required_distance:
         dist_covered += max_dist
         time_taken += duration
-        max_dist, duration = find_max_dist(start_time + time_taken, params)
+        max_dist, duration = find_max_dist(start_time + time_taken, params, secondary)
     time_taken += final_leg(
-        start_time + time_taken, required_distance - dist_covered, params
+        start_time + time_taken, required_distance - dist_covered, params, secondary
     )
     return time_taken
 
 
-def expected_pickup(initial_call_time, a, p, params):
+def expected_pickup(initial_call_time, a, p, params, secondary=False):
     """
     The expected service time for ambulance a to service patient p in time period t.
     Consists of:
       - getting to the patient
     """
-    pick_up_transit_time = journey_time(initial_call_time, params["amb_to_patient"][a][p], params)
+    pick_up_transit_time = journey_time(initial_call_time, params["amb_to_patient"][a][p], params, secondary)
     return pick_up_transit_time + initial_call_time
 
 
@@ -69,6 +78,7 @@ def get_service(initial_call_time, ind, params):
     """
     a, p, k = ind.ambulance, ind.pick_up_location, ind.speciality
     expected_pick_up_transit_time = journey_time(initial_call_time, params["amb_to_patient"][a][p], params)
+    ind.expected_pick_up_time = expected_pick_up_transit_time
     pick_up_transit_time = ciw.random.expovariate(1 / expected_pick_up_transit_time)
     ind.pick_up_time = pick_up_transit_time
     initial_call_time += pick_up_transit_time
@@ -78,9 +88,10 @@ def get_service(initial_call_time, ind, params):
     initial_call_time += delay_at_site
     ind.delay_at_site = delay_at_site
 
+    hosp_probs = [params["prob_hosp"][p][h][k] for h in range(params['n_hospitals'])]
     hospital = ciw.random_choice(
         list(range(params['n_hospitals'])) + [-1],
-        params["prob_hosp"][p][k] + [1 - sum(params["prob_hosp"][p][k])]
+       hosp_probs + [1 - sum(hosp_probs)]
     )
 
     if hospital == -1:
@@ -97,7 +108,7 @@ def get_service(initial_call_time, ind, params):
     else:
         ind.hospital = hospital
         expected_to_hosp_transit_time = journey_time(initial_call_time, params["patient_to_hosp"][p][hospital], params)
-        to_hosp_transit_time = ciw.random.expovariate( 1 / expected_to_hosp_transit_time)
+        to_hosp_transit_time = ciw.random.expovariate(1 / expected_to_hosp_transit_time)
         initial_call_time += to_hosp_transit_time
         ind.to_hospital_time = to_hosp_transit_time
 
@@ -114,46 +125,43 @@ def get_service(initial_call_time, ind, params):
 
 
 def make_service_dist(params):
-    class AmbulanceTrip(ciw.dists.Distribution):
+    class TransitTrip(ciw.dists.Distribution):
         def sample(self, t, ind):
             get_service(t, ind, params)
             return ind.complete_time
 
-    return AmbulanceTrip()
+    return TransitTrip()
 
 
-DataRecord = namedtuple(
-    "Record",
+TransitDataRecord = namedtuple(
+    "TransitRecord",
     [
         "id_number",
-        "customer_class",
         "pick_up_location",
         "speciality",
         "hospital",
         "ambulance_location",
-        "arrival_date",
-        "waiting_time",
-        "service_start_date",
-        "service_time",
-        "pick_up_time",
-        "delay_at_site",
-        "to_hospital_time",
-        "delay_at_hospital",
-        "return_to_loc_time",
-        "service_end_date",
-        "time_blocked",
-        "exit_date",
+        "ambulance_id",
+        "call_date",
+        "ambulance_service_start_date",
+        "ambulance_service_time",
+        "ambulance_expected_pick_up_time",
+        "ambulance_pick_up_time",
+        "ambulance_delay_at_site",
+        "ambulance_to_hospital_time",
+        "ambulance_delay_at_hospital",
+        "ambulance_return_to_loc_time",
+        "ambulance_service_end_date",
         "destination",
-        "queue_size_at_arrival",
-        "queue_size_at_departure",
     ],
 )
 
 
-class Patient(ciw.Individual):
+class TransitJob(ciw.Individual):
     def __init__(self, id_number, customer_class=0, priority_class=0, simulation=False):
         super().__init__(id_number, customer_class, priority_class, simulation)
         self.pick_up_time = False
+        self.expected_pick_up_time = False
         self.delay_at_site = False
         self.to_hospital_time = False
         self.delay_at_hospital = False
@@ -165,7 +173,7 @@ class Patient(ciw.Individual):
         self.ambulance = False
 
 
-class AmbulanceNode(ciw.Node):
+class TransitNode(ciw.Node):
     def next_node(self, ind):
         """
         Decides on the next node.
@@ -191,72 +199,62 @@ class AmbulanceNode(ciw.Node):
             ordered_choices = sorted(choices.keys(), key=lambda x: choices[x])
             for choice in ordered_choices:
                 node = self.simulation.nodes[choice + 2]
-                if any(not s.busy for s in node.servers):
-                    ind.ambulance = node.id_number - 2
-                    return node
+                for s in node.servers:
+                    if not s.busy:
+                        ind.ambulance = node.id_number - 2
+                        return node
             return self.simulation.nodes[-1]
 
     def write_individual_record(self, individual):
         """
         Write a data record for an individual:
-          - id_number
-          - customer_class
-          - pick_up_location
-          - speciality
-          - hospital
-          - ambulance_location
-          - arrival_date
-          - waiting_time
-          - service_start_date
-          - service_time
-          - pick_up_time
-          - delay_at_site
-          - to_hospital_time
-          - delay_at_hospital
-          - return_to_loc_time
-          - service_end_date
-          - time_blocked
-          - exit_date
-          - destination
-          - queue_size_at_arrival
-          - queue_size_at_departure
+        - id_number
+        - pick_up_location
+        - speciality
+        - hospital
+        - ambulance_location
+        - ambulance_id
+        - arrival_date
+        - service_start_date
+        - service_time
+        - expected_pick_up_time
+        - pick_up_time
+        - delay_at_site
+        - to_hospital_time
+        - delay_at_hospital
+        - return_to_loc_time
+        - service_end_date
+        - destination
+
         """
-        record = DataRecord(
+        if math.isinf(self.c):
+            server_id = False
+        else:
+            server_id = individual.server.id_number
+
+        record = TransitDataRecord(
             individual.id_number,
-            individual.previous_class,
             individual.pick_up_location,
             individual.speciality,
             individual.hospital,
             individual.ambulance,
+            f"L{individual.ambulance} V{server_id}",
             individual.arrival_date,
-            individual.service_start_date - individual.arrival_date,
             individual.service_start_date,
             individual.service_end_date - individual.service_start_date,
+            individual.expected_pick_up_time,
             individual.pick_up_time,
             individual.delay_at_site,
             individual.to_hospital_time,
             individual.delay_at_hospital,
             individual.return_to_loc_time,
             individual.service_end_date,
-            individual.exit_date - individual.service_end_date,
-            individual.exit_date,
-            individual.destination,
-            individual.queue_size_at_arrival,
-            individual.queue_size_at_departure,
+            individual.destination
         )
         individual.data_records.append(record)
 
-        individual.arrival_date = False
-        individual.service_time = False
-        individual.service_start_date = False
-        individual.service_end_date = False
-        individual.exit_date = False
-        individual.queue_size_at_arrival = False
-        individual.queue_size_at_departure = False
-        individual.destination = False
 
-
-class AmbulanceSimulation(ciw.Simulation):
+class TransitSimulation(ciw.Simulation):
     def __init__(
         self,
         network,
@@ -287,7 +285,7 @@ def get_arrival_dist(r):
     return ciw.dists.NoArrivals()
 
 
-def create_ambulance_network(params):
+def create_transit_network(params):
     arrival_rates = [r for row in params['loc_arrival_rates'] for r in row]
     N = ciw.create_network(
         arrival_distributions={

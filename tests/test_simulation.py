@@ -70,7 +70,9 @@ def test_convert_to_class():
 def test_get_delay_period():
 	params = {
 	    'n_factors': 2,
-	    'delay_split': [0, 0.5, 1]
+	    'n_factors_secondary': 3,
+	    'delay_split': [0, 0.5, 1],
+	    'delay_split_secondary': [0, 0.25, 0.75, 1]
 	}
 	assert methods.get_delay_period(0.0, params) == 0
 	assert methods.get_delay_period(0.1, params) == 0
@@ -82,9 +84,21 @@ def test_get_delay_period():
 	assert methods.get_delay_period(0.7, params) == 1
 	assert methods.get_delay_period(0.8, params) == 1
 	assert methods.get_delay_period(0.9, params) == 1
+	assert methods.get_delay_period(0.0, params, secondary=True) == 0
+	assert methods.get_delay_period(0.1, params, secondary=True) == 0
+	assert methods.get_delay_period(0.2, params, secondary=True) == 0
+	assert methods.get_delay_period(0.3, params, secondary=True) == 1
+	assert methods.get_delay_period(0.4, params, secondary=True) == 1
+	assert methods.get_delay_period(0.5, params, secondary=True) == 1
+	assert methods.get_delay_period(0.6, params, secondary=True) == 1
+	assert methods.get_delay_period(0.7, params, secondary=True) == 1
+	assert methods.get_delay_period(0.8, params, secondary=True) == 2
+	assert methods.get_delay_period(0.9, params, secondary=True) == 2
 	params = {
-	    'n_factors':5,
-	    'delay_split': [0, 0.2, 0.5, 0.6, 0.9, 1.0]
+	    'n_factors': 5,
+	    'n_factors_secondary': 4,
+	    'delay_split': [0, 0.2, 0.5, 0.6, 0.9, 1.0],
+	    'delay_split_secondary': [0, 0.3, 0.6, 0.8, 1.0]
 	}
 	assert methods.get_delay_period(0.0, params) == 0
 	assert methods.get_delay_period(0.1, params) == 0
@@ -96,6 +110,16 @@ def test_get_delay_period():
 	assert methods.get_delay_period(0.7, params) == 3
 	assert methods.get_delay_period(0.8, params) == 3
 	assert methods.get_delay_period(0.9, params) == 4
+	assert methods.get_delay_period(0.0, params, secondary=True) == 0
+	assert methods.get_delay_period(0.1, params, secondary=True) == 0
+	assert methods.get_delay_period(0.2, params, secondary=True) == 0
+	assert methods.get_delay_period(0.3, params, secondary=True) == 1
+	assert methods.get_delay_period(0.4, params, secondary=True) == 1
+	assert methods.get_delay_period(0.5, params, secondary=True) == 1
+	assert methods.get_delay_period(0.6, params, secondary=True) == 2
+	assert methods.get_delay_period(0.7, params, secondary=True) == 2
+	assert methods.get_delay_period(0.8, params, secondary=True) == 3
+	assert methods.get_delay_period(0.9, params, secondary=True) == 3
 
 
 def test_find_max_dist():
