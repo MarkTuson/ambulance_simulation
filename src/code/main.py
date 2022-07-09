@@ -4,59 +4,32 @@ Usage:
 Arguments
     params_name   : name of the parameter yml file
     results_name  : name of the results file to write
+    max_time      : maximum simulation time in days
     n_trials      : number of trials to run
+    n_cores       : number of cores to run
 """
-import sys
-from methods import *
-import ciw
+import argparse
+import methods
 import yaml
 import pandas as pd
-import numpy as np
+import multiprocessing
 
 if __name__ == "__main__":
-    args = sys.argv
-    params_name = args[1]
-    results_name = args[2]
-    n_trials = int(args[3])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('params_name', help='name of the parameter yml file')
+    parser.add_argument('results_name', help='name of the results file to write')
+    parser.add_argument('max_time', help='maximum simulation time in days')
+    parser.add_argument('n_trials', help='number of trials to run')
+    parser.add_argument('n_cores', help='number of cores to use')
+    args = parser.parse_args()
 
-    with open(params_name, "r") as f:
+    with open(args.params_name, "r") as f:
         params = yaml.load(f, Loader=yaml.CLoader)
 
-    all_recs = []
-    for trial in range(n_trials):
-        ciw.seed(trial)
-        N_transit = create_transit_network(params)
-        Q_transit = TransitSimulation(
-            N_transit, node_class=TransitNode, individual_class=TransitJob, params=params
-        )
-        Q_transit.simulate_until_max_time(31, progress_bar=True)
-        recs_transit = pd.DataFrame(Q_transit.get_all_records())
-        recs_transit = recs_transit[recs_transit['destination'] == -1]
-        
-        initial_recs = recs_transit[recs_transit['ambulance_location'] != 'False'].sort_values('call_date').reset_index()
-        N_response = create_response_network(params, initial_recs)
-        Q_response = ResponseSimulation(
-            N_response,
-            arrival_node_class=ResponseArrivalNode,
-            individual_class=ResponseJob,
-            node_class=ResponseNode,
-            params=params,
-            initial_recs=initial_recs
-        )
-        Q_response.simulate_until_max_time(31, progress_bar=True)
-        recs_response = Q_response.get_all_records()
-        recs_response = pd.DataFrame(recs_response)
-        recs_response = recs_response[recs_response['rrv_location'] != -1]
-        
-        recs_response = recs_response.set_index('id_number')
-        recs_transit = recs_transit.set_index('id_number')
-        recs = pd.concat([recs_transit, recs_response], axis=1)
-        recs.replace(to_replace=False, value=np.NAN, inplace=True, method=None)
-        recs['response_time'] = recs[['ambulance_pick_up_time', 'rrv_pick_up_time']].min(axis=1)
-        recs['rrv_action'] = recs.apply(classify, axis=1)
-        recs["Trial"] = trial
-        all_recs.append(recs)
+    pool = multiprocessing.Pool(int(args.n_cores))
+    arguments = [(params, float(args.max_time), trial) for trial in range(int(args.n_trials))]
+    all_recs = pool.starmap(methods.run_full_simulation, arguments)
 
     data = pd.concat(all_recs)
     data = data[data['destination'] == -1]
-    data.to_csv(results_name)
+    data.to_csv(args.results_name)

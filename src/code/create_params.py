@@ -49,6 +49,7 @@ if __name__ == "__main__":
 
     # Get allocation
     allocation = np.genfromtxt(data_folder + 'allocation.csv', delimiter=',')
+    allocation_secondary = np.genfromtxt(data_folder + 'allocation_secondary.csv', delimiter=',')
 
     # Get delay splits and factors
     delay_split = np.genfromtxt('src/data/global/delay_split.csv', delimiter=',')
@@ -85,7 +86,8 @@ if __name__ == "__main__":
             for j in range(len(destination_probabilities_A1))]
             for i in range(len(destination_probabilities_A1))
         ]).tolist(),
-        'ambulance_allocation': [int(c) for c in allocation.tolist()],
+        'allocation': [int(c) for c in allocation.tolist()],
+        'allocation_secondary': [int(c) for c in allocation_secondary.tolist()],
     }
 
     # Write parameters to file
