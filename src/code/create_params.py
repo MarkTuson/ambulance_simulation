@@ -31,6 +31,7 @@ if __name__ == "__main__":
     to_same_neighbouthood = travel_times.min(axis=1)
     travel_times = travel_times - (np.eye(num_neighbourhoods) * temp_max)
     travel_times = travel_times + (np.eye(num_neighbourhoods) * to_same_neighbouthood)
+    travel_times += 5 ## To account for travel within a neighbourhood
     travel_times = travel_times / 1440
 
     # mapping from ambulance index to neighbourhood index
@@ -58,8 +59,12 @@ if __name__ == "__main__":
     delay_factor_secondary = np.genfromtxt('src/data/global/delay_factor_secondary.csv', delimiter=',')
 
     # Get delays at hospital and at site
-    delay_at_hosp = np.genfromtxt(data_folder + 'delay_at_hosp.csv', delimiter=',')
-    delay_at_site = np.genfromtxt(data_folder + 'delay_at_site.csv', delimiter=',')
+    delay_at_hosp = np.genfromtxt(data_folder + 'delay_at_hosp.csv', delimiter=',') / 1440
+    delay_at_site = np.genfromtxt(data_folder + 'delay_at_site.csv', delimiter=',') / 1440
+
+    # Get refill time
+    refill_time = np.genfromtxt(data_folder + 'refill.csv', delimiter=',')
+    refill_time = refill_time / 1440
 
 
     # Assemble parameters dictionary
@@ -88,6 +93,7 @@ if __name__ == "__main__":
         ]).tolist(),
         'allocation': [int(c) for c in allocation.tolist()],
         'allocation_secondary': [int(c) for c in allocation_secondary.tolist()],
+        'refill_time': refill_time
     }
 
     # Write parameters to file

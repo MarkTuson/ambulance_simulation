@@ -113,7 +113,9 @@ def get_service(initial_call_time, ind, params):
         return_to_loc_time = ciw.random.expovariate(1 / expected_return_to_loc_time)
         ind.return_to_loc_time = return_to_loc_time
 
-        ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.return_to_loc_time
+        ind.refill_time = params['refill_time']
+
+        ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.return_to_loc_time + ind.refill_time
 
     else:
         ind.hospital = hospital
@@ -131,7 +133,9 @@ def get_service(initial_call_time, ind, params):
         return_to_loc_time = ciw.random.expovariate(1 / expected_return_to_loc_time)
         ind.return_to_loc_time = return_to_loc_time
 
-        ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.to_hospital_time + ind.delay_at_hospital + ind.return_to_loc_time
+        ind.refill_time = params['refill_time']
+
+        ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.to_hospital_time + ind.delay_at_hospital + ind.return_to_loc_time + ind.refill_time
 
 
 def make_service_dist(params):
@@ -161,6 +165,7 @@ TransitDataRecord = namedtuple(
         "ambulance_to_hospital_time",
         "ambulance_delay_at_hospital",
         "ambulance_return_to_loc_time",
+        'ambulance_refill_time',
         "ambulance_service_end_date",
         "destination",
     ],
@@ -176,6 +181,7 @@ class TransitJob(ciw.Individual):
         self.to_hospital_time = False
         self.delay_at_hospital = False
         self.return_to_loc_time = False
+        self.refill_time = False
         p, k = convert_from_class(customer_class, simulation.params)
         self.speciality = k
         self.pick_up_location = p
@@ -233,6 +239,7 @@ class TransitNode(ciw.Node):
         - to_hospital_time
         - delay_at_hospital
         - return_to_loc_time
+        - refill_time
         - service_end_date
         - destination
 
@@ -258,6 +265,7 @@ class TransitNode(ciw.Node):
             individual.to_hospital_time,
             individual.delay_at_hospital,
             individual.return_to_loc_time,
+            individual.refill_time,
             individual.service_end_date,
             individual.destination
         )
