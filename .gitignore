@@ -4,4 +4,3 @@ build/
 dist/
 .vscode/
 *.DS_Store*
-src/data/
