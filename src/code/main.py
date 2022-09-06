@@ -2,34 +2,40 @@
 Usage:
     main.py <params_name> <results_name> <n_trials>
 Arguments
-    params_name   : name of the parameter yml file
-    results_name  : name of the results file to write
-    max_time      : maximum simulation time in days
-    n_trials      : number of trials to run
-    n_cores       : number of cores to run
+Arguments
+    demand    : the demand level: 13, 19, 34, 45
+    scenario  : the optimisation scenario: A1, A1A2
+    resource  : the resource level: 75 to 99
+    year      : the traffic delay year: 2019, 2022
+    max_time  : the maximum simulation time in days
+    n_trials  : the number of trials to run
 """
-import argparse
 import methods
 import yaml
 import pandas as pd
-import multiprocessing
+import sys
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('params_name', help='name of the parameter yml file')
-    parser.add_argument('results_name', help='name of the results file to write')
-    parser.add_argument('max_time', help='maximum simulation time in days')
-    parser.add_argument('n_trials', help='number of trials to run')
-    parser.add_argument('n_cores', help='number of cores to use')
-    args = parser.parse_args()
+    args = sys.argv
+    demand = args[1]
+    scenario = args[2]
+    resource = args[3]
+    year = args[4]
+    max_time = args[5]
+    n_trials = args[6]
 
-    with open(args.params_name, "r") as f:
+    params_name = f"src/params/demand={demand}_scenario={scenario}_resource={resource}_year={year}.yml"
+    results_name = f"src/results/demand={demand}_scenario={scenario}_resource={resource}_year={year}.csv"
+    
+    with open(params_name, "r") as f:
         params = yaml.load(f, Loader=yaml.CLoader)
 
-    pool = multiprocessing.Pool(int(args.n_cores))
-    arguments = [(params, float(args.max_time), trial) for trial in range(int(args.n_trials))]
-    all_recs = pool.starmap(methods.run_full_simulation, arguments)
+    all_recs = []
+    for trial in range(int(n_trials)):
+        recs = methods.run_full_simulation(params, float(max_time), trial)
+        print(f'Completed Trial {trial}')
+        all_recs.append(recs)
 
     data = pd.concat(all_recs)
     data = data[data['destination'] == -1]
-    data.to_csv(args.results_name)
+    data.to_csv(results_name)
