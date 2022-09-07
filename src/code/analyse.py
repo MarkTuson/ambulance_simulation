@@ -44,7 +44,7 @@ for (demand, scenario, resource, year) in tqdm.tqdm(experiments):
         scenarios.append(scenario)
         resource_levels.append(resource)
         years.append(year)
-        trials.append(trials)
+        trials.append(trial)
         pecent_abandoneds.append(find_percent_abandoned(data, trial))
         mean_ambulance_utilisations.append(find_mean_ambulance_utilisation(data, trial))
         mean_rrv_utilisations.append(find_mean_rrv_utilisation(data, trial))
