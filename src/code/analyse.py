@@ -23,6 +23,24 @@ def find_mean_response_time(data, trial):
     data_nofalse = data_trial[data_trial['ambulance_id'] != 'LFalse VFalse']
     return data_nofalse['response_time'].mean()
 
+def find_percent_response_time_less_than(data, trial, target):
+    data_trial = data[data['trial']==trial]
+    data_nofalse = data_trial[data_trial['ambulance_id'] != 'LFalse VFalse']
+    return (data_nofalse['response_time'] <= (target / (60 * 24))).mean()
+
+def within_target(row):
+    if row['speciality'] == 0:
+        return row['response_time'] <= (8 / (60 * 24))
+    if row['speciality'] == 1:
+        return row['response_time'] <= (15 / (60 * 24))
+    if row['speciality'] == 2:
+        return row['response_time'] <= (60 / (60 * 24))
+
+def find_percent_within_target(data, trial):
+    data_trial = data[data['trial']==trial]
+    data_nofalse = data_trial[data_trial['ambulance_id'] != 'LFalse VFalse']
+    return data_nofalse.apply(within_target, axis=1).mean()
+
 
 experiments = [(d, s, r, y) for d in [13, 19, 34, 45] for s in ['A1A2', 'A1'] for r in range(75, 100) for y in [2019, 2022]]
 
@@ -34,6 +52,10 @@ pecent_abandoneds = []
 mean_ambulance_utilisations = []
 mean_rrv_utilisations = []
 mean_response_times = []
+response_times_less8 = []
+response_times_less15 = []
+response_times_less60 = []
+response_times_in_target = []
 years = []
 
 for (demand, scenario, resource, year) in tqdm.tqdm(experiments):
@@ -49,6 +71,10 @@ for (demand, scenario, resource, year) in tqdm.tqdm(experiments):
         mean_ambulance_utilisations.append(find_mean_ambulance_utilisation(data, trial))
         mean_rrv_utilisations.append(find_mean_rrv_utilisation(data, trial))
         mean_response_times.append(find_mean_response_time(data, trial))
+        response_times_less8.append(find_percent_response_time_less_than(data, trial, 8))
+        response_times_less15.append(find_percent_response_time_less_than(data, trial, 15))
+        response_times_less60.append(find_percent_response_time_less_than(data, trial, 60))
+        response_times_in_target.append(find_percent_within_target(data, trial))
 
 results = pd.DataFrame({
     'Demand Level': demand_levels,
@@ -59,7 +85,11 @@ results = pd.DataFrame({
     'Percent Abandoned': pecent_abandoneds,
     'Ambulance Utilisation': mean_ambulance_utilisations,
     'RRV Utilisation': mean_rrv_utilisations,
-    'Mean Response Time': mean_response_times
+    'Mean Response Time': mean_response_times,
+    'Percent Response < 8': response_times_less8,
+    'Percent Response < 15': response_times_less15,
+    'Percent Response < 60': response_times_less60,
+    'Percent Response within Target': response_times_in_target
 })
 
 results.to_csv('src/results/results_summary.csv', index=False)
