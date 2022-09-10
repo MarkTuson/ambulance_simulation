@@ -42,7 +42,7 @@ def find_percent_within_target(data, trial):
     return data_nofalse.apply(within_target, axis=1).mean()
 
 
-experiments = [(d, s, r, y) for d in [13, 19, 34, 45] for s in ['A1A2', 'A1'] for r in range(75, 100) for y in [2019, 2022]]
+experiments = [(d, s, r, y) for d in [13, 19, 34, 45] for s in ['A1A2', 'A1'] for r in range(60, 100) for y in [2019, 2022]]
 
 demand_levels = []
 scenarios = []
