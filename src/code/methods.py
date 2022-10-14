@@ -89,7 +89,7 @@ def get_service(initial_call_time, ind, params):
     a, p, k = ind.ambulance, ind.pick_up_location, ind.speciality
     expected_pick_up_transit_time = journey_time(initial_call_time, params["amb_to_patient"][a][p], params)
     ind.expected_pick_up_time = expected_pick_up_transit_time
-    pick_up_transit_time = ciw.random.expovariate(1 / expected_pick_up_transit_time)
+    pick_up_transit_time = ciw.random.triangular(0.75, 1.25, 1) * expected_pick_up_transit_time
     ind.pick_up_time = pick_up_transit_time
     initial_call_time += pick_up_transit_time
 
@@ -110,7 +110,7 @@ def get_service(initial_call_time, ind, params):
         ind.delay_at_hospital = None
 
         expected_return_to_loc_time = journey_time(initial_call_time, params["patient_to_amb"][p][a], params)
-        return_to_loc_time = ciw.random.expovariate(1 / expected_return_to_loc_time)
+        return_to_loc_time = ciw.random.triangular(0.75, 1.25, 1) * expected_return_to_loc_time
         ind.return_to_loc_time = return_to_loc_time
 
         ind.refill_time = params['refill_time']
@@ -120,7 +120,7 @@ def get_service(initial_call_time, ind, params):
     else:
         ind.hospital = hospital
         expected_to_hosp_transit_time = journey_time(initial_call_time, params["patient_to_hosp"][p][hospital], params)
-        to_hosp_transit_time = ciw.random.expovariate(1 / expected_to_hosp_transit_time)
+        to_hosp_transit_time = ciw.random.triangular(0.75, 1.25, 1) * expected_to_hosp_transit_time
         initial_call_time += to_hosp_transit_time
         ind.to_hospital_time = to_hosp_transit_time
 
@@ -130,7 +130,7 @@ def get_service(initial_call_time, ind, params):
         ind.delay_at_hospital = delay_at_hospital
 
         expected_return_to_loc_time = journey_time(initial_call_time, params["hosp_to_amb"][hospital][a], params)
-        return_to_loc_time = ciw.random.expovariate(1 / expected_return_to_loc_time)
+        return_to_loc_time = ciw.random.triangular(0.75, 1.25, 1) * expected_return_to_loc_time
         ind.return_to_loc_time = return_to_loc_time
 
         ind.refill_time = params['refill_time']
@@ -495,13 +495,13 @@ def get_service_response(initial_call_time, ind, params):
     if ind.expected_pick_up_time > ind.expected_ambulance_pick_up_time:
         ind.complete_time = 0
     else:
-        pick_up_transit_time = ciw.random.expovariate(1 / expected_pick_up_transit_time)
+        pick_up_transit_time = ciw.random.triangular(0.75, 1.25, 1) * expected_pick_up_transit_time
         ind.pick_up_time = pick_up_transit_time
 
         ind.delay_at_site = max(ind.ambulance_pick_up_time + ind.ambulance_delay_at_site - ind.pick_up_time, 0)
         
         expected_return_to_loc_time = journey_time(initial_call_time, params["patient_to_amb"][p][a], params, secondary=True)
-        return_to_loc_time = ciw.random.expovariate(1 / expected_return_to_loc_time)
+        return_to_loc_time = ciw.random.triangular(0.75, 1.25, 1) * expected_return_to_loc_time
         ind.return_to_loc_time = return_to_loc_time
         
         ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.return_to_loc_time
