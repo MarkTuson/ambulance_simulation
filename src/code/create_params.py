@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     # Get delays at hospital and at site
     delay_at_hosp = np.genfromtxt(f'src/data/global/delay_at_hosp.csv', delimiter=',') / 1440
-    delay_at_site = np.genfromtxt(f'src/data/global/delay_at_site.csv', delimiter=',') / 1440
+    delay_at_site = np.genfromtxt(f'src/data/global/delay_at_site.csv', delimiter=',')
 
     # Get refill time
     refill_time = np.genfromtxt(f'src/data/global/refill.csv', delimiter=',')

@@ -94,7 +94,7 @@ def get_service(initial_call_time, ind, params):
     initial_call_time += pick_up_transit_time
 
     expected_delay_at_site = params["delay_at_site"][k]
-    delay_at_site = expected_delay_at_site
+    delay_at_site = ciw.random.lognormvariate(params["delay_at_site"][0], params["delay_at_site"][1]) / 24
     initial_call_time += delay_at_site
     ind.delay_at_site = delay_at_site
 
