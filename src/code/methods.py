@@ -113,7 +113,7 @@ def get_service(initial_call_time, ind, params):
         return_to_loc_time = ciw.random.triangular(0.75, 1.25, 1) * expected_return_to_loc_time
         ind.return_to_loc_time = return_to_loc_time
 
-        ind.refill_time = params['refill_time']
+        ind.refill_time = params['refill_time'][0]
 
         ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.return_to_loc_time + ind.refill_time
 
@@ -370,6 +370,7 @@ class ResponseJob(ciw.Individual):
         self.pick_up_time = False
         self.delay_at_site = False
         self.return_to_loc_time = False
+        self.refill_time = False
         self.rrv = False
 
 
@@ -383,6 +384,7 @@ ResponseDataRecord = namedtuple(
         "rrv_pick_up_time",
         "rrv_delay_at_site",
         "rrv_return_to_loc_time"
+        'rrv_refill_time',
     ],
 )
 
@@ -430,6 +432,7 @@ class ResponseNode(ciw.Node):
         - rrv_pick_up_time
         - rrv_delay_at_site
         - rrv_return_to_loc_time
+        - rrv_refill_time
         """
         if math.isinf(self.c):
             server_id = False
@@ -444,6 +447,7 @@ class ResponseNode(ciw.Node):
             individual.pick_up_time,
             individual.delay_at_site,
             individual.return_to_loc_time,
+            individual.refill_time,
         )
         individual.data_records.append(record)
 
@@ -503,8 +507,10 @@ def get_service_response(initial_call_time, ind, params):
         expected_return_to_loc_time = journey_time(initial_call_time, params["patient_to_amb"][p][a], params, secondary=True)
         return_to_loc_time = ciw.random.triangular(0.75, 1.25, 1) * expected_return_to_loc_time
         ind.return_to_loc_time = return_to_loc_time
+
+        ind.refill_time = params['refill_time'][1]
         
-        ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.return_to_loc_time
+        ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.return_to_loc_time + ind.refill_time
 
 
 def make_response_service_dist(params):

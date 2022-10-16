@@ -46,11 +46,11 @@ if __name__ == "__main__":
     full_demand = pd.read_csv(f'src/data/demand_{demand}/demand.csv')
 
     # Get destination probabilities
-    destination_numbers_A1 = np.genfromtxt(f'src/data/demand_{demand}/destination_probability_A1.csv', delimiter=',')
+    destination_numbers_A1 = np.genfromtxt(f'src/data/global/destination_probability_A1.csv', delimiter=',')
     destination_probabilities_A1  = np.vstack([get_row_probs(destination_numbers_A1[i]) for i in range(num_neighbourhoods)])
-    destination_numbers_A2 = np.genfromtxt(f'src/data/demand_{demand}/destination_probability_A2.csv', delimiter=',')
+    destination_numbers_A2 = np.genfromtxt(f'src/data/global/destination_probability_A2.csv', delimiter=',')
     destination_probabilities_A2  = np.vstack([get_row_probs(destination_numbers_A2[i]) for i in range(num_neighbourhoods)])
-    destination_numbers_B = np.genfromtxt(f'src/data/demand_{demand}/destination_probability_B.csv', delimiter=',')
+    destination_numbers_B = np.genfromtxt(f'src/data/global/destination_probability_B.csv', delimiter=',')
     destination_probabilities_B  = np.vstack([get_row_probs(destination_numbers_B[i]) for i in range(num_neighbourhoods)])
 
     # Get allocation
@@ -64,12 +64,12 @@ if __name__ == "__main__":
     delay_factor_secondary = np.genfromtxt(f'src/data/global/{year}/delay_factor_secondary.csv', delimiter=',')
 
     # Get delays at hospital and at site
-    delay_at_hosp = np.genfromtxt(f'src/data/demand_{demand}/delay_at_hosp.csv', delimiter=',') / 1440
-    delay_at_site = np.genfromtxt(f'src/data/demand_{demand}/delay_at_site.csv', delimiter=',') / 1440
+    delay_at_hosp = np.genfromtxt(f'src/data/global/delay_at_hosp.csv', delimiter=',') / 1440
+    delay_at_site = np.genfromtxt(f'src/data/global/delay_at_site.csv', delimiter=',') / 1440
 
     # Get refill time
-    refill_time = np.genfromtxt(f'src/data/demand_{demand}/refill.csv', delimiter=',')
-    refill_time = float(refill_time / 1440)
+    refill_time = np.genfromtxt(f'src/data/global/refill.csv', delimiter=',')
+    refill_time = refill_time / 1440
 
 
     # Assemble parameters dictionary
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         ]).tolist(),
         'allocation': [int(c) for c in allocation.tolist()],
         'allocation_secondary': [int(c) for c in allocation_secondary.tolist()],
-        'refill_time': refill_time
+        'refill_time': refill_time.tolist()
     }
 
     # Write parameters to file
