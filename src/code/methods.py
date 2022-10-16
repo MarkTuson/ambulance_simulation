@@ -93,7 +93,6 @@ def get_service(initial_call_time, ind, params):
     ind.pick_up_time = pick_up_transit_time
     initial_call_time += pick_up_transit_time
 
-    expected_delay_at_site = params["delay_at_site"][k]
     delay_at_site = ciw.random.lognormvariate(params["delay_at_site"][0], params["delay_at_site"][1]) / 24
     initial_call_time += delay_at_site
     ind.delay_at_site = delay_at_site
@@ -132,7 +131,7 @@ def get_service(initial_call_time, ind, params):
         return_to_loc_time = ciw.random.triangular(0.75, 1.25, 1) * expected_return_to_loc_time
         ind.return_to_loc_time = return_to_loc_time
 
-        ind.refill_time = params['refill_time']
+        ind.refill_time = params['refill_time'][0]
 
         ind.complete_time = ind.pick_up_time + ind.delay_at_site + ind.to_hospital_time + ind.delay_at_hospital + ind.return_to_loc_time + ind.refill_time
 
@@ -382,8 +381,8 @@ ResponseDataRecord = namedtuple(
         "rrv_service_time",
         "rrv_pick_up_time",
         "rrv_delay_at_site",
-        "rrv_return_to_loc_time"
-        'rrv_refill_time',
+        "rrv_return_to_loc_time",
+        'rrv_refill_time'
     ],
 )
 
@@ -446,7 +445,7 @@ class ResponseNode(ciw.Node):
             individual.pick_up_time,
             individual.delay_at_site,
             individual.return_to_loc_time,
-            individual.refill_time,
+            individual.refill_time
         )
         individual.data_records.append(record)
 
