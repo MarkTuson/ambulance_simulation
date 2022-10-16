@@ -124,8 +124,7 @@ def get_service(initial_call_time, ind, params):
         initial_call_time += to_hosp_transit_time
         ind.to_hospital_time = to_hosp_transit_time
 
-        expected_delay_at_hospital = params["delay_at_hosp"][hospital][k]
-        delay_at_hospital = expected_delay_at_hospital
+        delay_at_hospital = ciw.random.uniform(params["delay_at_hosp"][k][0], params["delay_at_hosp"][k][1])
         initial_call_time += delay_at_hospital
         ind.delay_at_hospital = delay_at_hospital
 
