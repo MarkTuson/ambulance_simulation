@@ -39,3 +39,6 @@ To run `10` trials of a simulation over `31` days, for parameter set `src/params
 ## Allocation
 + Z_a == allocation
 + R_a == allocation_secondary
+
+
+The simulation starting point, date 0, is considered to be Monday 3am in the morning.
