@@ -3,12 +3,12 @@ Usage:
     main.py <params_name> <results_name> <n_trials>
 Arguments
 Arguments
-    demand    : the demand level: 13, 19, 34, 45
-    scenario  : the optimisation scenario: A1, A1A2
-    resource  : the resource level: 75 to 99
-    year      : the traffic delay year: 2019, 2022
-    max_time  : the maximum simulation time in days
-    n_trials  : the number of trials to run
+    demand     : the demand level: 13, 19, 34, 45
+    posts      : which ambulance posts to use (original, grid_3km, grid_5km, grid_sqrt5km)
+    allocation : the name of the allocation allocation
+    year       : the traffic delay year: 2019, 2022
+    max_time   : the maximum simulation time in days
+    n_trials   : the number of trials to run
 """
 import methods
 import yaml
@@ -18,14 +18,14 @@ import sys
 if __name__ == "__main__":
     args = sys.argv
     demand = args[1]
-    scenario = args[2]
-    resource = args[3]
+    posts = args[2]
+    allocation = args[3]
     year = args[4]
     max_time = args[5]
     n_trials = args[6]
 
-    params_name = f"src/params/demand={demand}_scenario={scenario}_resource={resource}_year={year}.yml"
-    results_name = f"src/results/demand={demand}_scenario={scenario}_resource={resource}_year={year}.csv"
+    params_name = f"src/params/demand={demand}_posts={posts}_allocation={allocation}_year={year}.yml"
+    results_name = f"src/results/demand={demand}_posts={posts}_allocation={allocation}_year={year}.csv"
     
     with open(params_name, "r") as f:
         params = yaml.load(f, Loader=yaml.CLoader)

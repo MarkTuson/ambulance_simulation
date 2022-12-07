@@ -294,19 +294,17 @@ class TransitSimulation(ciw.Simulation):
             server_class=server_class,
         )
 
+def transpose_and_flatten(got):
+    got_t = [[row[i] for row in got] for i in range(len(got[0]))]
+    want = [r for row in got_t for r in row]
+    return want
 
-def get_arrival_dist(r):
-    if r > 0.0:
-        return ciw.dists.Exponential(r)
-    return ciw.dists.NoArrivals()
-
-
-def create_transit_network(params):
-    arrival_rates = [r for row in params['loc_arrival_rates'] for r in row]
+def create_transit_network(params, max_time):
+    arrival_rates = transpose_and_flatten(params['loc_arrival_rates'])
     N = ciw.create_network(
         arrival_distributions={
             "Class "
-            + str(c): [get_arrival_dist(r)]
+            + str(c): [ciw.dists.PoissonIntervals(rates=r, endpoints=params["demand_split"], max_sample_date=max_time)]
             + [ciw.dists.NoArrivals() for a in range(params["n_ambulances"])]
             for c, r in enumerate(arrival_rates)
         },
@@ -534,11 +532,11 @@ def create_response_network(params, initial_recs):
 
 def run_full_simulation(params, max_time, trial):
     ciw.seed(trial)
-    N_transit = create_transit_network(params)
+    N_transit = create_transit_network(params, max_time)
     Q_transit = TransitSimulation(
         N_transit, node_class=TransitNode, individual_class=TransitJob, params=params
     )
-    Q_transit.simulate_until_max_time(max_time)
+    Q_transit.simulate_until_max_time(max_time, progress_bar=True)
     recs_transit = pd.DataFrame(Q_transit.get_all_records())
     recs_transit = recs_transit[recs_transit['destination'] == -1]
     
