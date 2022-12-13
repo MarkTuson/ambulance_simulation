@@ -536,7 +536,7 @@ def run_full_simulation(params, max_time, trial):
     Q_transit = TransitSimulation(
         N_transit, node_class=TransitNode, individual_class=TransitJob, params=params
     )
-    Q_transit.simulate_until_max_time(max_time, progress_bar=True)
+    Q_transit.simulate_until_max_time(max_time, progress_bar=False)
     recs_transit = pd.DataFrame(Q_transit.get_all_records())
     recs_transit = recs_transit[recs_transit['destination'] == -1]
     

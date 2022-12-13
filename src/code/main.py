@@ -1,6 +1,6 @@
 """
 Usage:
-    main.py <params_name> <results_name> <n_trials>
+    main.py <demand> <posts> <allocation> <year> <max_time> <n_trials>
 Arguments
 Arguments
     demand     : the demand level: 13, 19, 34, 45
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     all_recs = []
     for trial in range(int(n_trials)):
         recs = methods.run_full_simulation(params, float(max_time), trial)
-        print(f'Completed Trial {trial}')
+        # print(f'Completed Trial {trial}')
         all_recs.append(recs)
 
     data = pd.concat(all_recs)
