@@ -6,3 +6,4 @@ dist/
 *.DS_Store*
 src/results/sim_results/
 *.ipynb_checkpoints*
+results/
