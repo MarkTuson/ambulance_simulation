@@ -42,7 +42,7 @@ def find_percent_within_target(data, trial):
     return data_nofalse.apply(within_target, axis=1).mean()
 
 
-experiments = [(d, s, r, y) for d in [13, 19, 34, 45] for s in ['A1A2', 'A1'] for r in range(60, 100) for y in [2019, 2022]]
+experiments = [(d, s, r) for d in [13, 19, 34, 45] for s in ['noRRV', 'withRRV'] for r in range(60, 99)]
 
 demand_levels = []
 scenarios = []
@@ -56,16 +56,15 @@ response_times_less8 = []
 response_times_less15 = []
 response_times_less60 = []
 response_times_in_target = []
-years = []
 
-for (demand, scenario, resource, year) in tqdm.tqdm(experiments):
-    data = pd.read_csv(f'src/results/sim_results/results/demand={demand}_scenario={scenario}_resource={resource}_year={year}.csv', index_col=0)
+
+for (demand, scenario, resource) in tqdm.tqdm(experiments):
+    data = pd.read_csv(f'src/results/demand={demand}_posts=original_allocation=demand_{demand}_{scenario}_{resource}_year=2019.csv', index_col=0)
     data = data[(data['call_date'] > 6) & (data['call_date'] < 99)]
     for trial in range(6):
         demand_levels.append(demand)
         scenarios.append(scenario)
         resource_levels.append(resource)
-        years.append(year)
         trials.append(trial)
         pecent_abandoneds.append(find_percent_abandoned(data, trial))
         mean_ambulance_utilisations.append(find_mean_ambulance_utilisation(data, trial))
@@ -78,9 +77,8 @@ for (demand, scenario, resource, year) in tqdm.tqdm(experiments):
 
 results = pd.DataFrame({
     'Demand Level': demand_levels,
-    'Scenario': scenarios,
+    'Scenario': scenarios,  
     'Resource Level': resource_levels,
-    'Traffic Level': years,
     'Trial': trials,
     'Percent Abandoned': pecent_abandoneds,
     'Ambulance Utilisation': mean_ambulance_utilisations,
