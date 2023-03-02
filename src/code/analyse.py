@@ -61,7 +61,7 @@ response_times_in_target = []
 for (demand, scenario, resource) in tqdm.tqdm(experiments):
     data = pd.read_csv(f'src/results/demand={demand}_posts=original_allocation=demand_{demand}_{scenario}_{resource}_year=2019.csv', index_col=0)
     data = data[(data['call_date'] > 6) & (data['call_date'] < 99)]
-    for trial in range(6):
+    for trial in range(12):
         demand_levels.append(demand)
         scenarios.append(scenario)
         resource_levels.append(resource)
