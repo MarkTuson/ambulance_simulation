@@ -9,7 +9,7 @@ An example jupyter notebook of results analysis is given in `analysis.ipynb`.
 
 To create a parameter file called for a specific scenario, run:
 
->>> python src/code/create_params.py <demand> <posts> <allocation> <year>
+>>> python src/code/create_params.py demand posts allocation year
 
 Where:
   + `<demand>` is from [`demand_13`, `demand_19`, `demand_34`, `demand_45`]
@@ -26,7 +26,7 @@ This creates the following parameter file in `src/params/`:
 
 Once a parameter file is created, to run the simulation run:
 
->>> src/code/main.py <demand> <posts> <allocation> <year> <max_time> <n_trials>
+>>> src/code/main.py demand posts allocation year max_time n_trials
 
 Where:
   + `<demand>`, `<posts>`, `<allocation>`, `<year>` is as above
