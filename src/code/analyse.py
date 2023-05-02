@@ -55,7 +55,7 @@ def find_overall_surival(data, trial):
     data_nofalse = data_trial[data_trial['ambulance_id'] != 'LFalse VFalse']
     return data_nofalse.apply(find_survival_probability, axis=1).mean()
 
-experiments = [(d, s, r) for d in [13, 19, 34, 45] for s in ['noRRV', 'withRRV'] for r in range(60, 99)]
+experiments = [(d, s, r) for d in [13, 19, 34, 45] for s in ['noRRV', 'withRRV'] for r in range(60, 125)]
 # experiments = ['current', 'current_61', 'allocation_best_61', 'allocation_best_81']
 
 demand_levels = []
