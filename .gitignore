@@ -7,4 +7,4 @@ dist/
 src/results/sim_results/
 *.ipynb_checkpoints*
 results/
-*/test_params/*
+*/test_results/*
