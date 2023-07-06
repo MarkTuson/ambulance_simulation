@@ -26,16 +26,16 @@ if __name__ == "__main__":
 
     params_name = f"src/params/demand={demand}_posts={posts}_allocation={allocation}_year={year}.yml"
     results_name = f"src/results/demand={demand}_posts={posts}_allocation={allocation}_year={year}.csv"
-    
+
     with open(params_name, "r") as f:
         params = yaml.load(f, Loader=yaml.CLoader)
 
     all_recs = []
     for trial in range(int(n_trials)):
         recs = methods.run_full_simulation(params, float(max_time), trial)
-        # print(f'Completed Trial {trial}')
+        print(f"Completed Trial {trial}")
         all_recs.append(recs)
 
     data = pd.concat(all_recs)
-    data = data[data['destination'] == -1]
+    data = data[data["destination"] == -1]
     data.to_csv(results_name)
