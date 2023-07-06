@@ -2,6 +2,7 @@ import src.code.methods as methods
 import ciw
 import pandas as pd
 import numpy as np
+import yaml
 
 
 def test_convert_from_class():
@@ -275,3 +276,86 @@ def test_classify():
     assert expected_classifications[1] == obtained_classifications[1]
     assert expected_classifications[2] == obtained_classifications[2]
     assert expected_classifications[3] == obtained_classifications[3]
+
+
+def test_primary_simulation():
+    with open("tests/test_params.yml", "r") as f:
+        params = yaml.load(f, Loader=yaml.CLoader)
+
+    ciw.seed(0)
+    N_transit = methods.create_transit_network(params, 2)
+    Q_transit = methods.TransitSimulation(
+        N_transit,
+        node_class=methods.TransitNode,
+        individual_class=methods.TransitJob,
+        params=params,
+    )
+    Q_transit.simulate_until_max_time(10)
+    recs_transit = pd.DataFrame(Q_transit.get_all_records())
+    recs_transit = recs_transit[recs_transit["destination"] == -1]
+
+    expected_column_names = [
+        "id_number",
+        "pick_up_location",
+        "speciality",
+        "hospital",
+        "ambulance_location",
+        "ambulance_id",
+        "call_date",
+        "ambulance_service_start_date",
+        "ambulance_service_time",
+        "ambulance_expected_pick_up_time",
+        "ambulance_pick_up_time",
+        "ambulance_delay_at_site",
+        "ambulance_to_hospital_time",
+        "ambulance_delay_at_hospital",
+        "ambulance_return_to_loc_time",
+        "ambulance_refill_time",
+        "ambulance_service_end_date",
+        "destination",
+    ]
+    for c in range(18):
+        assert recs_transit.columns[c] == expected_column_names[c]
+
+
+def test_full_simulation():
+    with open("tests/test_params.yml", "r") as f:
+        params = yaml.load(f, Loader=yaml.CLoader)
+    recs = methods.run_full_simulation(params, 10, 0)
+
+    expected_column_names = [
+        "pick_up_location",
+        "speciality",
+        "hospital",
+        "ambulance_location",
+        "ambulance_id",
+        "call_date",
+        "ambulance_service_start_date",
+        "ambulance_service_time",
+        "ambulance_expected_pick_up_time",
+        "ambulance_pick_up_time",
+        "ambulance_delay_at_site",
+        "ambulance_to_hospital_time",
+        "ambulance_delay_at_hospital",
+        "ambulance_return_to_loc_time",
+        "ambulance_refill_time",
+        "ambulance_service_end_date",
+        "destination",
+        "rrv_location",
+        "rrv_id",
+        "rrv_service_time",
+        "rrv_pick_up_time",
+        "rrv_delay_at_site",
+        "rrv_return_to_loc_time",
+        "rrv_refill_time",
+        "response_time",
+        "rrv_action",
+        "trial",
+    ]
+    for c in range(27):
+        assert recs.columns[c] == expected_column_names[c]
+    # Only send RRV to speciality 0 and 1
+    assert set(recs["speciality"].unique()) == set([0, 1, 2])
+    assert set(
+        recs[recs["rrv_action"] != "RRV not deployed"]["speciality"].unique()
+    ) == set([0, 1])
