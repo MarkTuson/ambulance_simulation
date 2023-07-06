@@ -1,0 +1,4 @@
+python src/code/run_particular_simulation.py 75
+echo "Done resource level 75"
+python src/code/run_particular_simulation.py 89
+echo "Done resource level 89"

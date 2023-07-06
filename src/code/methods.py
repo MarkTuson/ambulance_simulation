@@ -530,17 +530,17 @@ def create_response_network(params, initial_recs):
 
 
 
-def run_full_simulation(params, max_time, trial):
+def run_full_simulation(params, max_time, trial, progress_bar=False):
     ciw.seed(trial)
     N_transit = create_transit_network(params, max_time)
     Q_transit = TransitSimulation(
         N_transit, node_class=TransitNode, individual_class=TransitJob, params=params
     )
-    Q_transit.simulate_until_max_time(max_time, progress_bar=False)
+    Q_transit.simulate_until_max_time(max_time, progress_bar=progress_bar)
     recs_transit = pd.DataFrame(Q_transit.get_all_records())
     recs_transit = recs_transit[recs_transit['destination'] == -1]
     
-    initial_recs = recs_transit[recs_transit['ambulance_location'] != 'False'].sort_values('call_date').reset_index()
+    initial_recs = recs_transit[(recs_transit['ambulance_id'] != 'LFalse VFalse') & (recs_transit['speciality'] != 2)].sort_values('call_date').reset_index()
     N_response = create_response_network(params, initial_recs)
     Q_response = ResponseSimulation(
         N_response,
@@ -550,7 +550,7 @@ def run_full_simulation(params, max_time, trial):
         params=params,
         initial_recs=initial_recs
     )
-    Q_response.simulate_until_max_time(max_time)
+    Q_response.simulate_until_max_time(max_time, progress_bar=progress_bar)
     recs_response = Q_response.get_all_records()
     recs_response = pd.DataFrame(recs_response)
     recs_response = recs_response[recs_response['rrv_location'] != -1]
@@ -558,7 +558,7 @@ def run_full_simulation(params, max_time, trial):
     recs_response = recs_response.set_index('id_number')
     recs_transit = recs_transit.set_index('id_number')
     recs = pd.concat([recs_transit, recs_response], axis=1)
-    recs.replace(to_replace=False, value=np.NAN, inplace=True, method=None)
+    recs.replace(to_replace=False, value=np.NAN, inplace=True)
     recs['response_time'] = recs[['ambulance_pick_up_time', 'rrv_pick_up_time']].min(axis=1)
     recs['rrv_action'] = recs.apply(classify, axis=1)
     recs["trial"] = trial

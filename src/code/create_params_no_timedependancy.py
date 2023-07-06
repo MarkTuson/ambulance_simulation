@@ -41,9 +41,9 @@ if __name__ == "__main__":
     demand_split = [1]
 
     # arrival rates for each neighbourhood, accroding to speciality A1, A2, B
-    demand_A1 = pd.read_csv(f'src/data/demand_13/A1_demand.csv', index_col=0, names=range(4))
-    demand_A2 = pd.read_csv(f'src/data/demand_13/A2_demand.csv', index_col=0, names=range(4))
-    demand_B = pd.read_csv(f'src/data/demand_13/B_demand.csv', index_col=0, names=range(4))
+    demand_A1 = pd.read_csv(f'src/data/demand_34/A1_demand.csv', index_col=0, names=range(4))
+    demand_A2 = pd.read_csv(f'src/data/demand_34/A2_demand.csv', index_col=0, names=range(4))
+    demand_B = pd.read_csv(f'src/data/demand_34/B_demand.csv', index_col=0, names=range(4))
     full_demand = [data.values.tolist() for data in [demand_A1, demand_A2, demand_B]]
     full_demand = [[[sum(lrow)/len(lrow)] for lrow in krow] for krow in full_demand]
 
@@ -57,8 +57,8 @@ if __name__ == "__main__":
     destination_probabilities_B  = np.vstack([get_row_probs(destination_numbers_B[i]) for i in range(num_neighbourhoods)])
 
     # Get allocation
-    allocation_primary = np.genfromtxt(f'src/data/posts/original/allocations/demand_13_withRRV_{rl}.csv', delimiter=',')
-    allocation_secondary = np.genfromtxt(f'src/data/posts/original/allocations_secondary/demand_13_withRRV_{rl}.csv', delimiter=',')
+    allocation_primary = np.genfromtxt(f'src/data/posts/original/allocations/demand_34_withRRV_{rl}.csv', delimiter=',')
+    allocation_secondary = np.genfromtxt(f'src/data/posts/original/allocations_secondary/demand_34_withRRV_{rl}.csv', delimiter=',')
 
     # Get delay splits and factors
     delay_split = [0.0, 1.0]
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     }
 
     # Write parameters to file
-    params_name = f"src/test_params/params_notimedependency_{rl}.yml"
+    params_name = f"src/test_results/params_notimedependency_{rl}.yml"
     with open(params_name, 'w') as f:
         f.write(yaml.dump(params))
 
