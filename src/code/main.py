@@ -33,9 +33,9 @@ if __name__ == "__main__":
     all_recs = []
     for trial in range(int(n_trials)):
         recs = methods.run_full_simulation(params, float(max_time), trial)
-        print(f"Completed Trial {trial}")
         all_recs.append(recs)
 
     data = pd.concat(all_recs)
     data = data[data["destination"] == -1]
     data.to_csv(results_name)
+    print(f"Completed allocation {allocation} with demand {demand}.")
