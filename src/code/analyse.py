@@ -11,7 +11,7 @@ def find_mean_ambulance_utilisation(data, trial):
         .sum()
         .groupby(level=0)
         .mean()
-        / 93
+        / 365
     )
     return grouped_data.mean()
 
@@ -24,7 +24,7 @@ def find_mean_rrv_utilisation(data, trial):
         .sum()
         .groupby(level=0)
         .mean()
-        / 93
+        / 365
     )
     return grouped_data.mean()
 
@@ -114,7 +114,7 @@ for demand, scenario, resource in tqdm.tqdm(experiments):
         index_col=0,
     )
     # data = pd.read_csv(f'src/results/demand=13_posts=original_allocation={exp}_year=2019.csv', index_col=0)
-    data = data[(data["call_date"] > 6) & (data["call_date"] < 99)]
+    data = data[(data["call_date"] > 30) & (data["call_date"] < 395)]
     for trial in range(12):
         demand_levels.append(demand)
         # scenarios.append(exp)

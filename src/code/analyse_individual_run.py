@@ -19,7 +19,7 @@ def find_mean_ambulance_utilisation(data, trial):
         .sum()
         .groupby(level=0)
         .mean()
-        / 93
+        / 365
     )
     return grouped_data.mean()
 
@@ -32,7 +32,7 @@ def find_mean_rrv_utilisation(data, trial):
         .sum()
         .groupby(level=0)
         .mean()
-        / 93
+        / 365
     )
     return grouped_data.mean()
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     overall_survival = []
 
     data = pd.read_csv(f"src/results/{results_file}.csv", index_col=0)
-    data = data[(data["call_date"] > 6) & (data["call_date"] < 99)]
+    data = data[(data["call_date"] > 30) & (data["call_date"] < 395)]
     trials = sorted(list(data["trial"].value_counts().index))
 
     for trial in trials:
