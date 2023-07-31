@@ -2,3 +2,4 @@ numpy
 requests
 pandas
 ciw
+dask
