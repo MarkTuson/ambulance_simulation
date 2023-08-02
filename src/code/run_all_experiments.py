@@ -9,7 +9,7 @@ import methods
 import yaml
 import pandas as pd
 import sys
-import dask
+import multiprocessing
 
 names = [
     "demand=13_posts=original_allocation=current_year=2019",
@@ -260,8 +260,8 @@ names = [
 ]
 
 def write_results(name):
-    max_time = 400
-    n_trials = 8
+    max_time = 210
+    n_trials = 5
     params_name = f"src/params/{name}.yml"
     results_name = f"src/results/{name}.csv"
 
@@ -283,5 +283,6 @@ def write_results(name):
 if __name__ == "__main__":
     args = sys.argv
     num_workers = int(args[1])
-    tasks = [dask.delayed(write_results)(name) for name in names[0:4]]
-    dask.compute(*tasks, num_workers=num_workers)
+    pool = multiprocessing.Pool(num_workers)
+    args = [(name,) for name in names
+    pool.starmap(write_results, args)
