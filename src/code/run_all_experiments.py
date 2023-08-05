@@ -284,5 +284,5 @@ if __name__ == "__main__":
     args = sys.argv
     num_workers = int(args[1])
     pool = multiprocessing.Pool(num_workers)
-    args = [(name,) for name in names
+    args = [(name,) for name in names]
     pool.starmap(write_results, args)

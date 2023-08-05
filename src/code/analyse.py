@@ -11,7 +11,7 @@ def find_mean_ambulance_utilisation(data, trial):
         .sum()
         .groupby(level=0)
         .mean()
-        / 365
+        / 180
     )
     return grouped_data.mean()
 
@@ -24,7 +24,7 @@ def find_mean_rrv_utilisation(data, trial):
         .sum()
         .groupby(level=0)
         .mean()
-        / 365
+        / 180
     )
     return grouped_data.mean()
 
@@ -85,10 +85,9 @@ def find_overall_surival(data, trial):
 experiments = [
     (d, s, r)
     for d in [13, 19, 34, 45]
-    for s in ["noRRV", "withRRV"]
-    for r in range(60, 125)
+    for s in ["single", "multiple"]
+    for r in range(60, 125, 2)
 ]
-# experiments = ['current', 'current_61', 'allocation_best_61', 'allocation_best_81']
 
 demand_levels = []
 scenarios = []
@@ -98,26 +97,15 @@ pecent_abandoneds = []
 mean_ambulance_utilisations = []
 mean_rrv_utilisations = []
 mean_response_times = []
-response_times_less8 = []
-response_times_less15 = []
-response_times_less60 = []
-response_times_in_target = []
-overall_survival = []
 
 for demand, scenario, resource in tqdm.tqdm(experiments):
-    # for exp in tqdm.tqdm(experiments):
-    # demand=13
-    # scenario='A'
-    # resource='B'
     data = pd.read_csv(
         f"src/results/demand={demand}_posts=original_allocation=demand_{demand}_{scenario}_{resource}_year=2019.csv",
         index_col=0,
     )
-    # data = pd.read_csv(f'src/results/demand=13_posts=original_allocation={exp}_year=2019.csv', index_col=0)
-    data = data[(data["call_date"] > 30) & (data["call_date"] < 395)]
+    data = data[(data["call_date"] > 25) & (data["call_date"] < 205)]
     for trial in range(12):
         demand_levels.append(demand)
-        # scenarios.append(exp)
         scenarios.append(scenario)
         resource_levels.append(resource)
         trials.append(trial)
@@ -125,17 +113,6 @@ for demand, scenario, resource in tqdm.tqdm(experiments):
         mean_ambulance_utilisations.append(find_mean_ambulance_utilisation(data, trial))
         mean_rrv_utilisations.append(find_mean_rrv_utilisation(data, trial))
         mean_response_times.append(find_mean_response_time(data, trial))
-        response_times_less8.append(
-            find_percent_response_time_less_than(data, trial, 8)
-        )
-        response_times_less15.append(
-            find_percent_response_time_less_than(data, trial, 15)
-        )
-        response_times_less60.append(
-            find_percent_response_time_less_than(data, trial, 60)
-        )
-        response_times_in_target.append(find_percent_within_target(data, trial))
-        overall_survival.append(find_overall_surival(data, trial))
 
 results = pd.DataFrame(
     {
@@ -147,11 +124,6 @@ results = pd.DataFrame(
         "Ambulance Utilisation": mean_ambulance_utilisations,
         "RRV Utilisation": mean_rrv_utilisations,
         "Mean Response Time": mean_response_times,
-        "Percent Response < 8": response_times_less8,
-        "Percent Response < 15": response_times_less15,
-        "Percent Response < 60": response_times_less60,
-        "Percent Response within Target": response_times_in_target,
-        "Overall Survival": overall_survival,
     }
 )
 
