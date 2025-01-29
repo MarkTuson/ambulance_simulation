@@ -1,0 +1,16 @@
+python src/code/analyse_individual_run.py demand=13_posts=original_allocation=current_year=2019
+python src/code/analyse_individual_run.py demand=19_posts=original_allocation=current_year=2019
+python src/code/analyse_individual_run.py demand=34_posts=original_allocation=current_year=2019
+python src/code/analyse_individual_run.py demand=45_posts=original_allocation=current_year=2019
+python src/code/analyse_individual_run.py demand=13_posts=original_allocation=demand_13_current_current_year=2019
+python src/code/analyse_individual_run.py demand=19_posts=original_allocation=demand_19_current_current_year=2019
+python src/code/analyse_individual_run.py demand=34_posts=original_allocation=demand_34_current_current_year=2019
+python src/code/analyse_individual_run.py demand=45_posts=original_allocation=demand_45_current_current_year=2019
+python src/code/analyse_individual_run.py demand=13_posts=grid_3km_allocation=grid_3km_year=2019
+python src/code/analyse_individual_run.py demand=19_posts=grid_3km_allocation=grid_3km_year=2019
+python src/code/analyse_individual_run.py demand=34_posts=grid_3km_allocation=grid_3km_year=2019
+python src/code/analyse_individual_run.py demand=45_posts=grid_3km_allocation=grid_3km_year=2019
+python src/code/analyse_individual_run.py demand=13_posts=grid_5km_allocation=grid_5km_year=2019
+python src/code/analyse_individual_run.py demand=19_posts=grid_5km_allocation=grid_5km_year=2019
+python src/code/analyse_individual_run.py demand=34_posts=grid_5km_allocation=grid_5km_year=2019
+python src/code/analyse_individual_run.py demand=45_posts=grid_5km_allocation=grid_5km_year=2019

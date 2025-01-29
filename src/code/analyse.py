@@ -104,7 +104,7 @@ for demand, scenario, resource in tqdm.tqdm(experiments):
         index_col=0,
     )
     data = data[(data["call_date"] > 25) & (data["call_date"] < 205)]
-    for trial in range(12):
+    for trial in range(5):
         demand_levels.append(demand)
         scenarios.append(scenario)
         resource_levels.append(resource)

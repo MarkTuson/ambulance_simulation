@@ -52,6 +52,11 @@ def find_mean_response_time(data, trial):
     data_nofalse = data_trial[data_trial["ambulance_id"] != "LFalse VFalse"]
     return data_nofalse["response_time"].mean()
 
+def find_sd_response_time(data, trial):
+    data_trial = data[data["trial"] == trial]
+    data_nofalse = data_trial[data_trial["ambulance_id"] != "LFalse VFalse"]
+    return data_nofalse["response_time"].std()
+
 
 def find_percent_response_time_less_than(data, trial, target):
     data_trial = data[data["trial"] == trial]
@@ -89,6 +94,12 @@ def find_overall_surival(data, trial):
     data_nofalse = data_trial[data_trial["ambulance_id"] != "LFalse VFalse"]
     return data_nofalse.apply(find_survival_probability, axis=1).mean()
 
+def find_A1_surival(data, trial):
+    data_trial = data[data["trial"] == trial]
+    data_nofalse = data_trial[data_trial["ambulance_id"] != "LFalse VFalse"]
+    data_A1 = data_nofalse[data_nofalse['speciality'] == 0]
+    return data_A1.apply(find_survival_probability, axis=1).mean()
+
 
 if __name__ == "__main__":
     args = sys.argv
@@ -98,6 +109,9 @@ if __name__ == "__main__":
     mean_ambulance_utilisations = []
     mean_rrv_utilisations = []
     mean_response_times = []
+    sd_response_times = []
+    survivals = []
+    A1_survivals = []
 
     data = pd.read_csv(f"src/results/{results_file}.csv", index_col=0)
     data = data[(data["call_date"] > 25) & (data["call_date"] < 205)]
@@ -108,6 +122,9 @@ if __name__ == "__main__":
         mean_ambulance_utilisations.append(find_mean_ambulance_utilisation(data, trial))
         mean_rrv_utilisations.append(find_mean_rrv_utilisation(data, trial))
         mean_response_times.append(find_mean_response_time(data, trial))
+        sd_response_times.append(find_sd_response_time(data, trial))
+        survivals.append(find_overall_surival(data, trial))
+        A1_survivals.append(find_A1_surival(data, trial))
 
     results = pd.DataFrame(
         {
@@ -116,6 +133,9 @@ if __name__ == "__main__":
             "Ambulance Utilisation": mean_ambulance_utilisations,
             "RRV Utilisation": mean_rrv_utilisations,
             "Mean Response Time": mean_response_times,
+            "StDev Response Time": sd_response_times,
+            "Overall Survival": survivals,
+            "A1 Survival": A1_survivals,
         }
     )
 
